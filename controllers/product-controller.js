@@ -1,7 +1,8 @@
 const express = require("express");
 const { createProduct, findProductById, findAllProducts } = require('../services/product-service');
+const { createMaintenance } = require("../services/maintenance-service");
 
-const productController = express.Router();
+const productRouter = express.Router();
 
 async function postProduct(req, res) {
     const name = req.body.name;
@@ -10,9 +11,7 @@ async function postProduct(req, res) {
 
     const product = await createProduct(name, category, listPrice);
 
-    if (product == null) {res.status(404);}
-
-    res.status(200).json(product);
+    return res.status(200).json(product);
 }
 
 async function getProductById(req, res) {
@@ -20,9 +19,9 @@ async function getProductById(req, res) {
 
     const product = await findProductById(id);
     
-    if (product == null) {res.status(404);}
+    if (product == null) {return res.status(404).send();}
 
-    res.status(200).json(product);
+    return res.status(200).json(product);
 }   
 
 async function getAllProducts(req, res) {
@@ -30,8 +29,22 @@ async function getAllProducts(req, res) {
     res.status(200).json(productArray);
 }
 
-productController.post("/", postProduct);
-productController.get("/:id", getProductById);
-productController.get("/", getAllProducts);
+async function postMaintenance(req, res) {
+    const id = req.params.id;
 
-module.exports = productController;
+    const product = await findProductById(id);
+
+    if (product == null) {return res.status(404).send();}
+
+    const date = req.body.date;
+
+    const maintenance = await createMaintenance(id, date);
+    return res.status(200).json(maintenance);
+}
+
+productRouter.post("/", postProduct);
+productRouter.get("/:id", getProductById);
+productRouter.get("/", getAllProducts);
+productRouter.post("/:id/maintenance", postMaintenance);
+
+module.exports = productRouter;
